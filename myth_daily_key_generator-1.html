@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MYTH Daily Access Key</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif;background:#eef5ff;color:#172033}.card{width:min(430px,100%);background:#fff;border-radius:22px;padding:30px 24px;text-align:center;box-shadow:0 18px 50px rgba(30,70,130,.14)}.logo{width:62px;height:62px;margin:auto auto 15px;border-radius:18px;background:#1976ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}h1{margin:0;font-size:25px}.sub{color:#697386;font-size:18px;line-height:1.5;margin:10px 0 18px;font-weight:700}.key{background:#f7faff;border:1px dashed #aeb9ca;border-radius:14px;padding:18px 10px;font:700 18px "Courier New",monospace;color:#1d4ed8;word-break:break-all}button{width:100%;border:0;border-radius:13px;padding:14px;margin-top:14px;background:#1976ff;color:#fff;font-size:16px;font-weight:700;cursor:pointer}.status{margin-top:16px;background:#f4f6f9;border-radius:10px;padding:11px;font-size:13px;color:#5c6678}.timer{font-weight:700;color:#172033;margin-top:5px}.note{font-size:11px;color:#8a93a3;line-height:1.45;margin-top:17px}
+</style></head><body><div class="card"><div class="logo">K</div><h1>MYTH Daily Access Key</h1><div class="sub">Your Access Key</div><div class="key" id="key">Loading...</div><button id="copy">COPY KEY</button></div>
+<script>
+// IMPORTANT: use the exact same secret in the Android verifier.
+const SECRET="CHANGE_THIS_TO_YOUR_LONG_SECRET";
+function indiaDate(){const a=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const p={};for(const x of a)if(x.type!=="literal")p[x.type]=x.value;return `${p.year}-${p.month}-${p.day}`}
+async function sha256(t){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase()}
+async function dailyKey(){const d=indiaDate(),h=await sha256(SECRET+"|"+d);return "MYTH-"+h.slice(0,4)+"-"+h.slice(4,8)+"-"+h.slice(8,12)}
+async function refresh(){document.getElementById("key").textContent=await dailyKey()}
+function timer(){const now=new Date();const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Kolkata",hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(now);const p={};for(const x of parts)if(x.type!=="literal")p[x.type]=x.value;const end=new Date(`${p.year}-${p.month}-${p.day}T23:59:59+05:30`).getTime()+1000;let r=Math.max(0,end-now.getTime());let s=Math.floor(r/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),q=s%60;document.getElementById("timer").textContent=`Changes in ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(q).padStart(2,"0")}`}
+document.getElementById("copy").onclick=async()=>{const k=document.getElementById("key").textContent;try{await navigator.clipboard.writeText(k)}catch(e){const t=document.createElement("textarea");t.value=k;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}document.getElementById("copy").textContent="COPIED ✓";setTimeout(()=>document.getElementById("copy").textContent="COPY KEY",1500)};refresh();setInterval(refresh,1000);
+</script></body></html>
