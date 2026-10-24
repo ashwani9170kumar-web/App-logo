@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Periodic Table | द्विभाषी आवर्त सारणी</title>
+<style>
+:root{--bg:#07111f;--panel:#101e31;--panel2:#14263d;--text:#edf5ff;--muted:#9bb0ca;--line:#2c4260;--accent:#57d6ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#142b49 0,#07111f 55%);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Devanagari",Segoe UI,sans-serif}
+header{padding:22px 18px 14px;text-align:center}h1{margin:0;font-size:clamp(24px,4vw,40px)}header p{color:var(--muted);margin:8px auto;max-width:850px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:0 14px 16px}.toolbar input,.toolbar select{background:#0e1d30;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
+main{max-width:1600px;margin:auto;padding:0 12px 28px}.table-wrap{overflow:auto;background:#091625b8;border:1px solid var(--line);border-radius:16px;padding:12px}
+.periodic{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:clamp(1px,.35vw,5px);width:100%;min-width:0}
+.el{position:relative;min-width:0;min-height:clamp(15px,4.2vw,76px);border:1px solid #ffffff25;border-radius:clamp(2px,.5vw,8px);padding:clamp(1px,.35vw,5px) 1px;text-align:center;cursor:pointer;transition:.15s;overflow:hidden;color:#08121e}
+.el:hover,.el:focus{transform:translateY(-2px);outline:2px solid white;z-index:2}.el .num{font-size:clamp(6px,.65vw,10px);display:block;text-align:left}.el .sym{font-size:clamp(9px,1.35vw,21px);font-weight:800;line-height:1.2}.el .nm{font-size:clamp(0px,.58vw,9px);line-height:1.1;display:block;overflow-wrap:anywhere}.el .mass{font-size:clamp(0px,.55vw,9px);opacity:.8}
+.placeholder{background:#15263a;color:#c2d3e9;border:1px dashed #56708f;display:flex;align-items:center;justify-content:center;font-size:clamp(4px,.65vw,10px);text-align:center;border-radius:4px;min-height:clamp(15px,4.2vw,76px);overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:12px}.legend span{font-size:11px;display:flex;align-items:center;gap:5px;color:var(--muted)}.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin-top:14px}.panel{background:linear-gradient(145deg,#11233a,#0b1728);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}.panel h2,.panel h3{margin:0 0 10px}.atom-head{display:flex;gap:12px;align-items:center}.big-symbol{font-size:46px;font-weight:850;color:var(--accent);line-height:1}.subtle{color:var(--muted);font-size:13px}.canvasbox{height:350px;background:radial-gradient(ellipse,#172d48,#07111f);border-radius:12px;overflow:hidden;position:relative;border:1px solid #29415f}.canvasbox canvas{display:block;width:100%;height:100%}.canvas-note{position:absolute;bottom:8px;left:10px;font-size:11px;color:#a9bfd8;pointer-events:none}.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.fact{background:#0b192a;border:1px solid #233a56;border-radius:10px;padding:9px}.fact .k{font-size:11px;color:var(--muted)}.fact .v{font-weight:650;overflow-wrap:anywhere}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.tab{border:1px solid var(--line);background:#0b192a;color:var(--text);padding:7px 10px;border-radius:8px;cursor:pointer}.tab.active{background:#194264;border-color:var(--accent)}.details{line-height:1.55;font-size:14px}.details h3{margin-top:15px;font-size:16px}.details p{margin:7px 0}.config{background:#07111f;padding:10px;border-radius:8px;overflow-wrap:anywhere;font-family:ui-monospace,monospace}.pill{display:inline-block;border:1px solid #365271;border-radius:99px;padding:3px 8px;margin:2px;color:#cce8ff;font-size:11px}.empty{color:var(--muted);text-align:center;padding:50px 10px}
+.section-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:0 auto 14px}
+.section-btn{flex:1;min-width:145px;max-width:360px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#0b192a;color:var(--text);font-weight:750;cursor:pointer}
+.section-btn.active{background:#194264;border-color:var(--accent);box-shadow:0 0 0 1px #57d6ff30}
+.page-section{display:none}.page-section.active{display:block}
+.section-title{margin:0 0 10px;font-size:clamp(18px,2.5vw,24px)}
+.table-wrap{overflow-x:hidden;width:100%}
+.periodic{width:100%;min-width:0;grid-template-columns:repeat(18,minmax(0,1fr));gap:clamp(1px,.22vw,3px)}
+@media(max-width:600px){main{padding-left:5px;padding-right:5px}.panel{padding:8px}.canvasbox{height:300px}.table-wrap{padding:2px}.periodic{width:100%;min-width:0;gap:1px}.el{min-width:0;padding:1px 0;border-radius:3px;overflow:hidden}.el .nm,.el .mass{display:none}.el .num{font-size:clamp(5px,1.5vw,8px);line-height:1}.el .sym{font-size:clamp(7px,2.4vw,14px);line-height:1.1}.placeholder{font-size:clamp(4px,1.25vw,7px);padding:0;overflow:hidden;word-break:break-word}.legend{justify-content:flex-start;gap:5px;font-size:10px}}
+@media(max-width:380px){.periodic{gap:0}.el{border-radius:2px}.el .num{font-size:5px}.el .sym{font-size:7px}.placeholder{font-size:4px}.legend{font-size:9px}}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.canvasbox{height:300px}.panel{padding:12px}.table-wrap{padding:5px}.periodic{grid-template-columns:repeat(18,minmax(0,1fr))}.el .nm,.el .mass{display:none}.el .num{font-size:7px}.el .sym{font-size:clamp(8px,2.5vw,15px)}.placeholder{font-size:6px}}
+
+@media(max-width:600px){
+ .table-wrap{padding:2px;overflow:hidden}
+ .periodic{width:100%;min-width:0;grid-template-columns:repeat(18,minmax(0,1fr));gap:1px}
+ .el{min-width:0;min-height:clamp(16px,5.2vw,27px);padding:0;border-radius:2px}
+ .el .num{font-size:clamp(4px,1.35vw,7px);line-height:1;display:block}
+ .el .sym{font-size:clamp(6px,2.1vw,12px);line-height:1.05}
+ .el .nm,.el .mass{display:none}
+ .placeholder{min-height:clamp(16px,5.2vw,27px);font-size:clamp(3px,1.1vw,6px);padding:0;border-radius:2px;line-height:1}
+}
+@media(max-width:360px){
+ .el .num{font-size:4px}.el .sym{font-size:6px}
+ .placeholder{font-size:3px}
+}
+
+</style>
+</head>
+<body>
+<header><h1>⚛ 3D आवर्त सारणी | 3D Periodic Table</h1><p>किसी भी तत्व पर क्लिक करें — उसके परमाणु का घूमता 3D मॉडल, इलेक्ट्रॉन shells और subshells, तथा हिंदी–English जानकारी देखें। / Select an element to explore its animated atom and bilingual facts.</p></header>
+<div class="section-nav" role="tablist" aria-label="Learning sections">
+  <button class="section-btn active" id="sectionBtn1" role="tab" aria-selected="true" aria-controls="section1">1. 3D मॉडल / 3D Model</button>
+  <button class="section-btn" id="sectionBtn2" role="tab" aria-selected="false" aria-controls="section2">2. जानकारी / Details</button>
+</div>
+<main>
+  <section class="page-section active" id="section1" role="tabpanel" aria-labelledby="sectionBtn1">
+    <section class="panel">
+      <div class="atom-head"><div class="big-symbol" id="bigSymbol">H</div><div><h2 id="elementTitle">Hydrogen / हाइड्रोजन</h2><div class="subtle" id="elementSubtitle">Element 1 · Period 1 · Group 1</div></div></div>
+      <div class="canvasbox" id="atomCanvas"><div class="canvas-note">Drag to rotate · Wheel / pinch to zoom · Atom structure schematic</div></div>
+      <p class="subtle">मॉडल को खींचकर चारों ओर घुमाएँ। मोबाइल पर दो उंगलियों से pinch करके और कंप्यूटर पर mouse wheel से ज़ूम करें, ताकि nucleus (core) और electrons को पास से देख सकें। / Drag to rotate; pinch to zoom on mobile or use the mouse wheel on desktop to inspect the nucleus and electrons.</p>
+    </section>
+    <section class="panel" style="margin-top:14px">
+      <h2 class="section-title">आवर्त सारणी से तत्व चुनें | Choose an element</h2>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="तत्व खोजें / Search element (name, symbol, number)" aria-label="Search elements">
+        <select id="filter" aria-label="Filter by category"><option value="all">सभी तत्व / All elements</option><option value="alkali">Alkali metals</option><option value="alkaline">Alkaline earth metals</option><option value="transition">Transition metals</option><option value="post">Post-transition metals</option><option value="metalloid">Metalloids</option><option value="nonmetal">Reactive nonmetals</option><option value="halogen">Halogens</option><option value="noble">Noble gases</option><option value="lanth">Lanthanides</option><option value="act">Actinides</option><option value="unknown">Unknown properties</option></select>
+      </div>
+      <div class="table-wrap"><div class="subtle" style="padding:4px 2px 8px">तत्व चुनने के लिए उस पर टैप करें / Tap an element to select it</div><div class="periodic" id="periodic1"></div></div>
+      <div class="legend" id="legend1"></div>
+    </section>
+  </section>
+
+  <section class="page-section" id="section2" role="tabpanel" aria-labelledby="sectionBtn2">
+    <section class="panel">
+      <h2 class="section-title">आवर्त सारणी | Periodic table</h2>
+      <p class="subtle">पहले सेक्शन में चुना गया तत्व यहाँ भी चुना रहेगा। आप यहाँ कोई दूसरा तत्व भी चुन सकते हैं। / Your selection from Section 1 stays selected here, and you can choose another element.</p>
+      <div class="toolbar">
+        <input id="search2" type="search" placeholder="तत्व खोजें / Search element" aria-label="Search elements in section 2">
+        <select id="filter2" aria-label="Filter by category in section 2"><option value="all">सभी तत्व / All elements</option><option value="alkali">Alkali metals</option><option value="alkaline">Alkaline earth metals</option><option value="transition">Transition metals</option><option value="post">Post-transition metals</option><option value="metalloid">Metalloids</option><option value="nonmetal">Reactive nonmetals</option><option value="halogen">Halogens</option><option value="noble">Noble gases</option><option value="lanth">Lanthanides</option><option value="act">Actinides</option><option value="unknown">Unknown properties</option></select>
+      </div>
+      <div class="table-wrap"><div class="periodic" id="periodic2"></div></div>
+      <div class="legend" id="legend2"></div>
+    </section>
+    <div class="layout">
+      <section class="panel">
+        <div class="atom-head"><div class="big-symbol" id="bigSymbol2">H</div><div><h2 id="elementTitle2">Hydrogen / हाइड्रोजन</h2><div class="subtle" id="elementSubtitle2">Element 1 · Period 1 · Group 1</div></div></div>
+        <div class="facts" id="facts"></div>
+      </section>
+      <section class="panel">
+        <h2>तत्व की पूरी जानकारी | Complete element details</h2>
+        <div class="tabs"><button class="tab active" data-tab="overview">Overview / परिचय</button><button class="tab" data-tab="atom">Atomic structure / परमाणु</button><button class="tab" data-tab="uses">Uses / उपयोग</button></div>
+        <div class="details" id="details"></div>
+      </section>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+const raw = [
+[1,'H','Hydrogen','हाइड्रोजन',1,1,1.008,'nonmetal','1s¹','Colorless, odorless gas','रंगहीन, गंधहीन गैस','Water, ammonia, fuel cells','पानी, अमोनिया, ईंधन सेल'],
+[2,'He','Helium','हीलियम',18,1,4.0026,'noble','1s²','Colorless noble gas','रंगहीन अक्रिय गैस','Cryogenics, balloons, leak detection','क्रायोजेनिक्स, गुब्बारे, रिसाव जाँच'],
+[3,'Li','Lithium','लिथियम',1,2,6.94,'alkali','[He] 2s¹','Soft, silvery metal','नरम, चाँदी जैसी धातु','Rechargeable batteries, ceramics','रिचार्जेबल बैटरी, सिरेमिक'],
+[4,'Be','Beryllium','बेरिलियम',2,2,9.0122,'alkaline','[He] 2s²','Hard, lightweight metal','कठोर, हल्की धातु','Aerospace alloys, X-ray windows','एयरोस्पेस मिश्रधातु, एक्स-रे विंडो'],
+[5,'B','Boron','बोरॉन',13,2,10.81,'metalloid','[He] 2s² 2p¹','Brittle metalloid','भंगुर उपधातु','Glass, detergents, semiconductors','काँच, डिटर्जेंट, अर्धचालक'],
+[6,'C','Carbon','कार्बन',14,2,12.011,'nonmetal','[He] 2s² 2p²','Solid; several allotropes','ठोस; कई अपररूप','Life chemistry, steel, graphite, diamond','जीव रसायन, इस्पात, ग्रेफाइट, हीरा'],
+[7,'N','Nitrogen','नाइट्रोजन',15,2,14.007,'nonmetal','[He] 2s² 2p³','Colorless gas','रंगहीन गैस','Fertilizers, inert atmospheres','उर्वरक, निष्क्रिय वातावरण'],
+[8,'O','Oxygen','ऑक्सीजन',16,2,15.999,'nonmetal','[He] 2s² 2p⁴','Reactive gas','अभिक्रियाशील गैस','Respiration, steelmaking, medicine','श्वसन, इस्पात निर्माण, चिकित्सा'],
+[9,'F','Fluorine','फ्लोरीन',17,2,18.998,'halogen','[He] 2s² 2p⁵','Extremely reactive pale gas','अत्यंत अभिक्रियाशील हल्की गैस','Fluorides, specialized chemicals','फ्लोराइड, विशेष रसायन'],
+[10,'Ne','Neon','निऑन',18,2,20.180,'noble','[He] 2s² 2p⁶','Noble gas','अक्रिय गैस','Signs and lighting','साइन बोर्ड और प्रकाश'],
+[11,'Na','Sodium','सोडियम',1,3,22.990,'alkali','[Ne] 3s¹','Soft, reactive metal','नरम, अभिक्रियाशील धातु','Chemical production, sodium lamps','रासायनिक उत्पादन, सोडियम लैंप'],
+[12,'Mg','Magnesium','मैग्नीशियम',2,3,24.305,'alkaline','[Ne] 3s²','Lightweight metal','हल्की धातु','Alloys, flares, biology','मिश्रधातु, फ्लेयर, जीवविज्ञान'],
+[13,'Al','Aluminium','एल्युमिनियम',13,3,26.982,'post','[Ne] 3s² 3p¹','Light, corrosion-resistant metal','हल्की, जंग-रोधी धातु','Cans, aircraft, construction','डिब्बे, विमान, निर्माण'],
+[14,'Si','Silicon','सिलिकॉन',14,3,28.085,'metalloid','[Ne] 3s² 3p²','Crystalline metalloid','क्रिस्टलीय उपधातु','Chips, solar cells, glass','चिप, सौर सेल, काँच'],
+[15,'P','Phosphorus','फॉस्फोरस',15,3,30.974,'nonmetal','[Ne] 3s² 3p³','Reactive nonmetal','अभिक्रियाशील अधातु','Fertilizers, matches','उर्वरक, माचिस'],
+[16,'S','Sulfur','सल्फर',16,3,32.06,'nonmetal','[Ne] 3s² 3p⁴','Yellow solid','पीला ठोस','Sulfuric acid, rubber processing','सल्फ्यूरिक अम्ल, रबर प्रसंस्करण'],
+[17,'Cl','Chlorine','क्लोरीन',17,3,35.45,'halogen','[Ne] 3s² 3p⁵','Reactive greenish gas','अभिक्रियाशील हरा-पीला गैस','Water disinfection, PVC','जल कीटाणुशोधन, PVC'],
+[18,'Ar','Argon','आर्गन',18,3,39.948,'noble','[Ne] 3s² 3p⁶','Noble gas','अक्रिय गैस','Welding, bulbs','वेल्डिंग, बल्ब'],
+[19,'K','Potassium','पोटैशियम',1,4,39.098,'alkali','[Ar] 4s¹','Soft reactive metal','नरम अभिक्रियाशील धातु','Fertilizers, essential electrolyte','उर्वरक, आवश्यक इलेक्ट्रोलाइट'],
+[20,'Ca','Calcium','कैल्शियम',2,4,40.078,'alkaline','[Ar] 4s²','Reactive alkaline-earth metal','अभिक्रियाशील क्षारीय मृदा धातु','Cement, lime, bones and teeth','सीमेंट, चूना, हड्डियाँ व दाँत'],
+[21,'Sc','Scandium','स्कैंडियम',3,4,44.956,'transition','[Ar] 3d¹ 4s²','Silvery transition metal','चाँदी जैसी संक्रमण धातु','Lightweight high-performance alloys','हल्की उच्च-प्रदर्शन मिश्रधातु'],
+[22,'Ti','Titanium','टाइटेनियम',4,4,47.867,'transition','[Ar] 3d² 4s²','Strong, corrosion-resistant metal','मजबूत, जंग-रोधी धातु','Aircraft, implants, pigments','विमान, इम्प्लांट, पिगमेंट'],
+[23,'V','Vanadium','वैनेडियम',5,4,50.942,'transition','[Ar] 3d³ 4s²','Hard transition metal','कठोर संक्रमण धातु','Strong steel alloys, catalysts','मजबूत इस्पात मिश्रधातु, उत्प्रेरक'],
+[24,'Cr','Chromium','क्रोमियम',6,4,51.996,'transition','[Ar] 3d⁵ 4s¹','Hard, lustrous metal','कठोर चमकीली धातु','Stainless steel, plating','स्टेनलेस स्टील, प्लेटिंग'],
+[25,'Mn','Manganese','मैंगनीज',7,4,54.938,'transition','[Ar] 3d⁵ 4s²','Hard, brittle metal','कठोर भंगुर धातु','Steelmaking, batteries','इस्पात निर्माण, बैटरी'],
+[26,'Fe','Iron','लोहा',8,4,55.845,'transition','[Ar] 3d⁶ 4s²','Magnetic metal','चुंबकीय धातु','Steel, construction, machinery','इस्पात, निर्माण, मशीनरी'],
+[27,'Co','Cobalt','कोबाल्ट',9,4,58.933,'transition','[Ar] 3d⁷ 4s²','Magnetic transition metal','चुंबकीय संक्रमण धातु','Batteries, superalloys, pigments','बैटरी, सुपरमिश्रधातु, रंगद्रव्य'],
+[28,'Ni','Nickel','निकेल',10,4,58.693,'transition','[Ar] 3d⁸ 4s²','Corrosion-resistant metal','जंग-रोधी धातु','Stainless steel, batteries','स्टेनलेस स्टील, बैटरी'],
+[29,'Cu','Copper','ताँबा',11,4,63.546,'transition','[Ar] 3d¹⁰ 4s¹','Excellent electrical conductor','उत्कृष्ट विद्युत चालक','Wiring, plumbing, electronics','तार, पाइप, इलेक्ट्रॉनिक्स'],
+[30,'Zn','Zinc','जस्ता',12,4,65.38,'transition','[Ar] 3d¹⁰ 4s²','Bluish-white metal','नीली-सफेद धातु','Galvanizing, alloys, batteries','गैल्वनाइजिंग, मिश्रधातु, बैटरी'],
+[31,'Ga','Gallium','गैलियम',13,4,69.723,'post','[Ar] 3d¹⁰ 4s² 4p¹','Low-melting metal','कम गलनांक वाली धातु','Semiconductors, LEDs','अर्धचालक, LED'],
+[32,'Ge','Germanium','जर्मेनियम',14,4,72.630,'metalloid','[Ar] 3d¹⁰ 4s² 4p²','Brittle metalloid','भंगुर उपधातु','Fiber optics, infrared optics','फाइबर ऑप्टिक्स, इन्फ्रारेड ऑप्टिक्स'],
+[33,'As','Arsenic','आर्सेनिक',15,4,74.922,'metalloid','[Ar] 3d¹⁰ 4s² 4p³','Brittle metalloid; toxic forms','भंगुर उपधातु; कुछ रूप विषैले','Specialty semiconductors','विशेष अर्धचालक'],
+[34,'Se','Selenium','सेलेनियम',16,4,78.971,'nonmetal','[Ar] 3d¹⁰ 4s² 4p⁴','Nonmetal with photoconductive forms','प्रकाश-संवेदी रूपों वाला अधातु','Glass, electronics, nutrition in trace amounts','काँच, इलेक्ट्रॉनिक्स, अल्प मात्रा में पोषण'],
+[35,'Br','Bromine','ब्रोमीन',17,4,79.904,'halogen','[Ar] 3d¹⁰ 4s² 4p⁵','Reddish-brown liquid','लाल-भूरा द्रव','Flame retardants and chemical synthesis','अग्निरोधी पदार्थ और रासायनिक संश्लेषण'],
+[36,'Kr','Krypton','क्रिप्टॉन',18,4,83.798,'noble','[Ar] 3d¹⁰ 4s² 4p⁶','Noble gas','अक्रिय गैस','Specialty lamps and lasers','विशेष लैंप और लेज़र'],
+[37,'Rb','Rubidium','रुबिडियम',1,5,85.468,'alkali','[Kr] 5s¹','Very reactive soft metal','बहुत अभिक्रियाशील नरम धातु','Research, atomic clocks','अनुसंधान, परमाणु घड़ी'],
+[38,'Sr','Strontium','स्ट्रॉन्शियम',2,5,87.62,'alkaline','[Kr] 5s²','Reactive metal','अभिक्रियाशील धातु','Red fireworks, magnets','लाल आतिशबाज़ी, चुंबक'],
+[39,'Y','Yttrium','इट्रियम',3,5,88.906,'transition','[Kr] 4d¹ 5s²','Silvery metal','चाँदी जैसी धातु','Phosphors, ceramics, lasers','फॉस्फर, सिरेमिक, लेज़र'],
+[40,'Zr','Zirconium','जिरकोनियम',4,5,91.224,'transition','[Kr] 4d² 5s²','Corrosion-resistant metal','जंग-रोधी धातु','Nuclear cladding, ceramics','नाभिकीय क्लैडिंग, सिरेमिक'],
+[41,'Nb','Niobium','नायोबियम',5,5,92.906,'transition','[Kr] 4d⁴ 5s¹','Ductile transition metal','तन्य संक्रमण धातु','Superconducting magnets, alloys','अतिचालक चुंबक, मिश्रधातु'],
+[42,'Mo','Molybdenum','मॉलिब्डेनम',6,5,95.95,'transition','[Kr] 4d⁵ 5s¹','High-melting metal','उच्च गलनांक धातु','Steel alloys, catalysts','इस्पात मिश्रधातु, उत्प्रेरक'],
+[43,'Tc','Technetium','टेक्नीशियम',7,5,98,'transition','[Kr] 4d⁵ 5s²','Radioactive metal','रेडियोधर्मी धातु','Medical imaging isotope Tc-99m','चिकित्सीय इमेजिंग समस्थानिक Tc-99m'],
+[44,'Ru','Ruthenium','रुथेनियम',8,5,101.07,'transition','[Kr] 4d⁷ 5s¹','Hard platinum-group metal','कठोर प्लैटिनम-समूह धातु','Catalysts, electronics','उत्प्रेरक, इलेक्ट्रॉनिक्स'],
+[45,'Rh','Rhodium','रोडियम',9,5,102.906,'transition','[Kr] 4d⁸ 5s¹','Rare reflective metal','दुर्लभ परावर्तक धातु','Catalytic converters, plating','कैटेलिटिक कन्वर्टर, प्लेटिंग'],
+[46,'Pd','Palladium','पैलेडियम',10,5,106.42,'transition','[Kr] 4d¹⁰','Platinum-group metal','प्लैटिनम-समूह धातु','Catalysts, electronics','उत्प्रेरक, इलेक्ट्रॉनिक्स'],
+[47,'Ag','Silver','चाँदी',11,5,107.868,'transition','[Kr] 4d¹⁰ 5s¹','Best electrical conductor among metals','धातुओं में श्रेष्ठ विद्युत चालक','Electronics, jewelry, mirrors','इलेक्ट्रॉनिक्स, आभूषण, दर्पण'],
+[48,'Cd','Cadmium','कैडमियम',12,5,112.414,'transition','[Kr] 4d¹⁰ 5s²','Soft toxic metal','नरम विषैली धातु','Some batteries and specialized coatings','कुछ बैटरियाँ और विशेष कोटिंग'],
+[49,'In','Indium','इंडियम',13,5,114.818,'post','[Kr] 4d¹⁰ 5s² 5p¹','Soft metal','नरम धातु','Touchscreens (ITO), solders','टचस्क्रीन (ITO), सोल्डर'],
+[50,'Sn','Tin','टिन',14,5,118.710,'post','[Kr] 4d¹⁰ 5s² 5p²','Malleable metal','आघातवर्धनीय धातु','Solder, tinplate, alloys','सोल्डर, टिन-प्लेट, मिश्रधातु'],
+[51,'Sb','Antimony','एंटीमनी',15,5,121.760,'metalloid','[Kr] 4d¹⁰ 5s² 5p³','Brittle metalloid','भंगुर उपधातु','Flame retardants, alloys','अग्निरोधी पदार्थ, मिश्रधातु'],
+[52,'Te','Tellurium','टेल्यूरियम',16,5,127.60,'metalloid','[Kr] 4d¹⁰ 5s² 5p⁴','Brittle metalloid','भंगुर उपधातु','Solar cells, alloys','सौर सेल, मिश्रधातु'],
+[53,'I','Iodine','आयोडीन',17,5,126.904,'halogen','[Kr] 4d¹⁰ 5s² 5p⁵','Dark lustrous solid; vapor is violet','गहरा चमकीला ठोस; वाष्प बैंगनी','Antiseptics, iodized salt','एंटीसेप्टिक, आयोडीन युक्त नमक'],
+[54,'Xe','Xenon','जीनॉन',18,5,131.293,'noble','[Kr] 4d¹⁰ 5s² 5p⁶','Heavy noble gas','भारी अक्रिय गैस','Flash lamps, ion propulsion research','फ्लैश लैंप, आयन प्रणोदन अनुसंधान'],
+[55,'Cs','Cesium','सीज़ियम',1,6,132.905,'alkali','[Xe] 6s¹','Extremely reactive alkali metal','अत्यंत अभिक्रियाशील क्षार धातु','Atomic clocks, drilling fluids','परमाणु घड़ी, ड्रिलिंग द्रव'],
+[56,'Ba','Barium','बेरियम',2,6,137.327,'alkaline','[Xe] 6s²','Reactive alkaline-earth metal','अभिक्रियाशील क्षारीय मृदा धातु','Medical contrast compounds, drilling','चिकित्सीय कॉन्ट्रास्ट यौगिक, ड्रिलिंग'],
+[57,'La','Lanthanum','लैंथेनम',3,6,138.905,'lanth','[Xe] 5d¹ 6s²','Soft rare-earth metal','नरम दुर्लभ-मृदा धातु','Camera lenses, catalysts','कैमरा लेंस, उत्प्रेरक'],
+[58,'Ce','Cerium','सीरियम',null,6,140.116,'lanth','[Xe] 4f¹ 5d¹ 6s²','Reactive rare-earth metal','अभिक्रियाशील दुर्लभ-मृदा धातु','Glass polishing, catalytic converters','काँच पॉलिश, कैटेलिटिक कन्वर्टर'],
+[59,'Pr','Praseodymium','प्रसीओडिमियम',null,6,140.908,'lanth','[Xe] 4f³ 6s²','Soft silvery rare-earth metal','नरम चाँदी जैसी दुर्लभ-मृदा धातु','Magnets, glass coloring','चुंबक, काँच का रंग'],
+[60,'Nd','Neodymium','नियोडिमियम',null,6,144.242,'lanth','[Xe] 4f⁴ 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','Powerful permanent magnets','शक्तिशाली स्थायी चुंबक'],
+[61,'Pm','Promethium','प्रोमेथियम',null,6,145,'lanth','[Xe] 4f⁵ 6s²','Radioactive rare-earth metal','रेडियोधर्मी दुर्लभ-मृदा धातु','Research, specialized batteries','अनुसंधान, विशेष बैटरी'],
+[62,'Sm','Samarium','समेरियम',null,6,150.36,'lanth','[Xe] 4f⁶ 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','Magnets, neutron absorbers','चुंबक, न्यूट्रॉन अवशोषक'],
+[63,'Eu','Europium','यूरोपियम',null,6,151.964,'lanth','[Xe] 4f⁷ 6s²','Reactive rare-earth metal','अभिक्रियाशील दुर्लभ-मृदा धातु','Red/blue phosphors, security marks','लाल/नीले फॉस्फर, सुरक्षा चिह्न'],
+[64,'Gd','Gadolinium','गैडोलिनियम',null,6,157.25,'lanth','[Xe] 4f⁷ 5d¹ 6s²','Magnetic rare-earth metal','चुंबकीय दुर्लभ-मृदा धातु','MRI contrast agents, neutron capture','MRI कॉन्ट्रास्ट एजेंट, न्यूट्रॉन अवशोषण'],
+[65,'Tb','Terbium','टर्बियम',null,6,158.925,'lanth','[Xe] 4f⁹ 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','Green phosphors, magnetostrictive alloys','हरे फॉस्फर, मैग्नेटोस्ट्रिक्टिव मिश्रधातु'],
+[66,'Dy','Dysprosium','डिस्प्रोसियम',null,6,162.500,'lanth','[Xe] 4f¹⁰ 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','High-performance magnets','उच्च-प्रदर्शन चुंबक'],
+[67,'Ho','Holmium','होल्मियम',null,6,164.930,'lanth','[Xe] 4f¹¹ 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','Lasers, magnetic applications','लेज़र, चुंबकीय उपयोग'],
+[68,'Er','Erbium','एर्बियम',null,6,167.259,'lanth','[Xe] 4f¹² 6s²','Rare-earth metal','दुर्लभ-मृदा धातु','Fiber-optic amplifiers, lasers','फाइबर-ऑप्टिक एम्प्लीफायर, लेज़र'],
+[69,'Tm','Thulium','थुलियम',null,6,168.934,'lanth','[Xe] 4f¹³ 6s²','Rare and soft metal','दुर्लभ नरम धातु','Portable X-ray sources, lasers','पोर्टेबल एक्स-रे स्रोत, लेज़र'],
+[70,'Yb','Ytterbium','इटर्बियम',null,6,173.045,'lanth','[Xe] 4f¹⁴ 6s²','Soft rare-earth metal','नरम दुर्लभ-मृदा धातु','Atomic clocks, specialty alloys','परमाणु घड़ी, विशेष मिश्रधातु'],
+[71,'Lu','Lutetium','ल्यूटेशियम',null,6,174.967,'lanth','[Xe] 4f¹⁴ 5d¹ 6s²','Dense rare-earth metal','घनी दुर्लभ-मृदा धातु','PET detector crystals, catalysts','PET डिटेक्टर क्रिस्टल, उत्प्रेरक'],
+[72,'Hf','Hafnium','हैफ्नियम',4,6,178.49,'transition','[Xe] 4f¹⁴ 5d² 6s²','Corrosion-resistant metal','जंग-रोधी धातु','Nuclear control rods, microchips','नाभिकीय कंट्रोल रॉड, माइक्रोचिप'],
+[73,'Ta','Tantalum','टैंटलम',5,6,180.948,'transition','[Xe] 4f¹⁴ 5d³ 6s²','Corrosion-resistant metal','जंग-रोधी धातु','Capacitors, medical implants','कैपेसिटर, मेडिकल इम्प्लांट'],
+[74,'W','Tungsten','टंगस्टन',6,6,183.84,'transition','[Xe] 4f¹⁴ 5d⁴ 6s²','Very high melting point','बहुत उच्च गलनांक','Cutting tools, high-temperature parts','कटिंग टूल, उच्च-ताप भाग'],
+[75,'Re','Rhenium','रेनियम',7,6,186.207,'transition','[Xe] 4f¹⁴ 5d⁵ 6s²','Dense, high-melting metal','घनी, उच्च गलनांक धातु','Jet-engine superalloys, catalysts','जेट इंजन सुपरमिश्रधातु, उत्प्रेरक'],
+[76,'Os','Osmium','ऑस्मियम',8,6,190.23,'transition','[Xe] 4f¹⁴ 5d⁶ 6s²','Extremely dense metal','अत्यंत घनी धातु','Hard alloys, specialized tips','कठोर मिश्रधातु, विशेष नोक'],
+[77,'Ir','Iridium','इरिडियम',9,6,192.217,'transition','[Xe] 4f¹⁴ 5d⁷ 6s²','Very corrosion-resistant metal','बहुत जंग-रोधी धातु','Spark plugs, crucibles','स्पार्क प्लग, क्रूसिबल'],
+[78,'Pt','Platinum','प्लैटिनम',10,6,195.084,'transition','[Xe] 4f¹⁴ 5d⁹ 6s¹','Noble, dense metal','उत्कृष्ट, घनी धातु','Catalysts, jewelry, lab equipment','उत्प्रेरक, आभूषण, प्रयोगशाला उपकरण'],
+[79,'Au','Gold','सोना',11,6,196.967,'transition','[Xe] 4f¹⁴ 5d¹⁰ 6s¹','Malleable, corrosion-resistant metal','आघातवर्धनीय, जंग-रोधी धातु','Jewelry, electronics, finance','आभूषण, इलेक्ट्रॉनिक्स, वित्त'],
+[80,'Hg','Mercury','पारा',12,6,200.592,'transition','[Xe] 4f¹⁴ 5d¹⁰ 6s²','Liquid metal at room temperature','कमरे के ताप पर द्रव धातु','Specialized instruments; toxic use restricted','विशेष उपकरण; विषाक्त होने से उपयोग सीमित'],
+[81,'Tl','Thallium','थैलियम',13,6,204.38,'post','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹','Soft, highly toxic metal','नरम, अत्यंत विषैली धातु','Specialized electronics and research','विशेष इलेक्ट्रॉनिक्स और अनुसंधान'],
+[82,'Pb','Lead','सीसा',14,6,207.2,'post','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²','Dense, toxic metal','घनी, विषैली धातु','Lead-acid batteries, radiation shielding','लेड-एसिड बैटरी, विकिरण परिरक्षण'],
+[83,'Bi','Bismuth','बिस्मथ',15,6,208.980,'post','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³','Brittle heavy metal','भारी भंगुर धातु','Medicines, low-melting alloys','दवाएँ, कम गलनांक मिश्रधातु'],
+[84,'Po','Polonium','पोलोनियम',16,6,209,'post','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴','Rare radioactive element','दुर्लभ रेडियोधर्मी तत्व','Specialized research only','केवल विशेष अनुसंधान'],
+[85,'At','Astatine','एस्टैटीन',17,6,210,'halogen','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵','Very rare radioactive halogen','अत्यंत दुर्लभ रेडियोधर्मी हैलोजन','Research; targeted radiotherapy studies','अनुसंधान; लक्षित रेडियोथेरेपी अध्ययन'],
+[86,'Rn','Radon','रेडॉन',18,6,222,'noble','[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶','Radioactive noble gas','रेडियोधर्मी अक्रिय गैस','No routine use; indoor exposure is a hazard','नियमित उपयोग नहीं; घर के भीतर संपर्क जोखिम'],
+[87,'Fr','Francium','फ्रैंशियम',1,7,223,'alkali','[Rn] 7s¹','Extremely rare radioactive alkali metal','अत्यंत दुर्लभ रेडियोधर्मी क्षार धातु','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[88,'Ra','Radium','रेडियम',2,7,226,'alkaline','[Rn] 7s²','Radioactive alkaline-earth metal','रेडियोधर्मी क्षारीय मृदा धातु','Historical use; tightly controlled research','ऐतिहासिक उपयोग; नियंत्रित अनुसंधान'],
+[89,'Ac','Actinium','एक्टिनियम',3,7,227,'act','[Rn] 6d¹ 7s²','Radioactive actinide','रेडियोधर्मी ऐक्टिनाइड','Research and targeted alpha therapy studies','अनुसंधान और लक्षित अल्फा थेरेपी अध्ययन'],
+[90,'Th','Thorium','थोरियम',null,7,232.038,'act','[Rn] 6d² 7s²','Radioactive actinide','रेडियोधर्मी ऐक्टिनाइड','Nuclear fuel-cycle research','नाभिकीय ईंधन चक्र अनुसंधान'],
+[91,'Pa','Protactinium','प्रोटैक्टिनियम',null,7,231.036,'act','[Rn] 5f² 6d¹ 7s²','Rare radioactive actinide','दुर्लभ रेडियोधर्मी ऐक्टिनाइड','Scientific research','वैज्ञानिक अनुसंधान'],
+[92,'U','Uranium','यूरेनियम',null,7,238.029,'act','[Rn] 5f³ 6d¹ 7s²','Dense radioactive metal','घनी रेडियोधर्मी धातु','Nuclear energy, geological dating','नाभिकीय ऊर्जा, भूवैज्ञानिक काल-निर्धारण'],
+[93,'Np','Neptunium','नेप्टूनियम',null,7,237,'act','[Rn] 5f⁴ 6d¹ 7s²','Radioactive actinide','रेडियोधर्मी ऐक्टिनाइड','Research and nuclear science','अनुसंधान और नाभिकीय विज्ञान'],
+[94,'Pu','Plutonium','प्लूटोनियम',null,7,244,'act','[Rn] 5f⁶ 7s²','Radioactive actinide','रेडियोधर्मी ऐक्टिनाइड','Nuclear science; tightly controlled','नाभिकीय विज्ञान; कड़ा नियंत्रण'],
+[95,'Am','Americium','अमेरिसियम',null,7,243,'act','[Rn] 5f⁷ 7s²','Synthetic radioactive actinide','कृत्रिम रेडियोधर्मी ऐक्टिनाइड','Smoke detectors (Am-241), research','स्मोक डिटेक्टर (Am-241), अनुसंधान'],
+[96,'Cm','Curium','क्यूरियम',null,7,247,'act','[Rn] 5f⁷ 6d¹ 7s²','Synthetic radioactive actinide','कृत्रिम रेडियोधर्मी ऐक्टिनाइड','Research, space-science instruments','अनुसंधान, अंतरिक्ष-विज्ञान उपकरण'],
+[97,'Bk','Berkelium','बर्केलियम',null,7,247,'act','[Rn] 5f⁹ 7s²','Synthetic radioactive actinide','कृत्रिम रेडियोधर्मी ऐक्टिनाइड','Element research','तत्व अनुसंधान'],
+[98,'Cf','Californium','कैलिफोर्नियम',null,7,251,'act','[Rn] 5f¹⁰ 7s²','Synthetic radioactive actinide','कृत्रिम रेडियोधर्मी ऐक्टिनाइड','Neutron sources in specialized applications','विशेष उपयोगों में न्यूट्रॉन स्रोत'],
+[99,'Es','Einsteinium','आइंस्टीनियम',null,7,252,'act','[Rn] 5f¹¹ 7s²','Synthetic radioactive element','कृत्रिम रेडियोधर्मी तत्व','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[100,'Fm','Fermium','फर्मियम',null,7,257,'act','[Rn] 5f¹² 7s²','Synthetic radioactive element','कृत्रिम रेडियोधर्मी तत्व','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[101,'Md','Mendelevium','मेंडेलीवियम',null,7,258,'act','[Rn] 5f¹³ 7s²','Synthetic radioactive element','कृत्रिम रेडियोधर्मी तत्व','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[102,'No','Nobelium','नोबेलियम',null,7,259,'act','[Rn] 5f¹⁴ 7s²','Synthetic radioactive element','कृत्रिम रेडियोधर्मी तत्व','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[103,'Lr','Lawrencium','लॉरेंसियम',null,7,266,'act','[Rn] 5f¹⁴ 7s² 7p¹','Synthetic radioactive element','कृत्रिम रेडियोधर्मी तत्व','Scientific research only','केवल वैज्ञानिक अनुसंधान'],
+[104,'Rf','Rutherfordium','रदरफोर्डियम',4,7,267,'unknown','[Rn] 5f¹⁴ 6d² 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[105,'Db','Dubnium','डब्नियम',5,7,268,'unknown','[Rn] 5f¹⁴ 6d³ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[106,'Sg','Seaborgium','सीबोर्गियम',6,7,269,'unknown','[Rn] 5f¹⁴ 6d⁴ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[107,'Bh','Bohrium','बोरियम',7,7,270,'unknown','[Rn] 5f¹⁴ 6d⁵ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[108,'Hs','Hassium','हैसियम',8,7,277,'unknown','[Rn] 5f¹⁴ 6d⁶ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[109,'Mt','Meitnerium','माइटनरियम',9,7,278,'unknown','[Rn] 5f¹⁴ 6d⁷ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[110,'Ds','Darmstadtium','डार्मस्टैड्टियम',10,7,281,'unknown','[Rn] 5f¹⁴ 6d⁸ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[111,'Rg','Roentgenium','रॉन्टजेनियम',11,7,282,'unknown','[Rn] 5f¹⁴ 6d⁹ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[112,'Cn','Copernicium','कोपरनिसियम',12,7,285,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[113,'Nh','Nihonium','निहोनियम',13,7,286,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[114,'Fl','Flerovium','फ्लेरोवियम',14,7,289,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[115,'Mc','Moscovium','मॉस्कोवियम',15,7,290,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[116,'Lv','Livermorium','लिवरमोरियम',16,7,293,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[117,'Ts','Tennessine','टेनेसीन',17,7,294,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵','Synthetic, highly radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only','केवल अनुसंधान'],
+[118,'Og','Oganesson','ओगनेसन',18,7,294,'unknown','[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶','Synthetic, extremely radioactive element','कृत्रिम, अत्यधिक रेडियोधर्मी तत्व','Research only; properties remain uncertain','केवल अनुसंधान; गुण अभी अनिश्चित']
+];
+const colors={alkali:'#ffb86b',alkaline:'#ffd66b',transition:'#f3a0b8',post:'#b9a4ff',metalloid:'#8ee2be',nonmetal:'#8edbff',halogen:'#7ce5d4',noble:'#9bb6ff',lanth:'#d5a6ff',act:'#ff9b9b',unknown:'#aab5c6'};
+const categoryNames={alkali:'Alkali metals / क्षार धातु',alkaline:'Alkaline earth metals / क्षारीय मृदा धातु',transition:'Transition metals / संक्रमण धातु',post:'Post-transition metals / उत्तर-संक्रमण धातु',metalloid:'Metalloids / उपधातु',nonmetal:'Reactive nonmetals / अधातु',halogen:'Halogens / हैलोजन',noble:'Noble gases / अक्रिय गैसें',lanth:'Lanthanides / लैंथेनाइड',act:'Actinides / ऐक्टिनाइड',unknown:'Unknown properties / अज्ञात गुण'};
+const elements=raw.map(r=>({n:r[0],s:r[1],en:r[2],hi:r[3],g:r[4],p:r[5],mass:r[6],cat:r[7],config:r[8],descEn:r[9],descHi:r[10],usesEn:r[11],usesHi:r[12]}));
+function shells(n){let caps=[2,8,18,32,32,18,8],out=[];for(let c of caps){let x=Math.min(c,n);out.push(x);n-=x;if(n<=0)break;}return out}
+function neutrons(e){return Math.max(0,Math.round(e.mass)-e.n)}
+function periodCol(e){if(e.p<=3)return e.g||1; if(e.p===4)return e.g; if(e.p===5)return e.g; if(e.p===6){if(e.n>=58&&e.n<=71)return 3;return e.g} if(e.p===7){if(e.n>=90&&e.n<=103)return 3;return e.g}return e.g}
+const periodicTables=[document.getElementById('periodic1'),document.getElementById('periodic2')];
+const positions=new Map();
+function put(e,col,row){positions.set(e.n,[col,row]);}
+elements.forEach(e=>{let c=periodCol(e); if(e.n>=58&&e.n<=71)c=e.n-54; if(e.n>=90&&e.n<=103)c=e.n-86; let r=e.p;if(e.n>=58&&e.n<=71)r=8;if(e.n>=90&&e.n<=103)r=9;put(e,c,r)});
+function renderTable(){
+ periodicTables.forEach(periodic=>{
+  periodic.innerHTML='';
+  for(let row=1;row<=9;row++)for(let col=1;col<=18;col++){
+   let e=elements.find(x=>{let p=positions.get(x.n);return p&&p[0]===col&&p[1]===row});
+   if(!e){let label=(row===6&&col===3)?'57–71<br>Lanthanides':(row===7&&col===3)?'89–103<br>Actinides':'';if(label){let d=document.createElement('div');d.className='placeholder';d.style.gridColumn=col;d.style.gridRow=row;d.innerHTML=label;periodic.appendChild(d)}continue}
+   let d=document.createElement('button');d.className='el';d.style.gridColumn=col;d.style.gridRow=row;d.style.background=colors[e.cat];d.dataset.n=e.n;d.setAttribute('aria-label',`${e.en} ${e.n}`);d.innerHTML=`<span class="num">${e.n}</span><span class="sym">${e.s}</span><span class="nm">${e.en}</span><span class="mass">${e.mass}</span>`;d.onclick=()=>selectElement(e.n);periodic.appendChild(d)
+  }
+ });
+}
+function renderLegend(){['legend1','legend2'].forEach(id=>{document.getElementById(id).innerHTML=Object.keys(colors).map(k=>`<span><i class="dot" style="background:${colors[k]}"></i>${categoryNames[k]}</span>`).join('')})}
+let selected=elements[0],activeTab='overview',renderer,scene,camera,atomGroup,animId;
+function selectElement(n){
+ selected=elements.find(e=>e.n===n)||elements[0];
+ [['bigSymbol','elementTitle','elementSubtitle'],['bigSymbol2','elementTitle2','elementSubtitle2']].forEach(ids=>{
+  document.getElementById(ids[0]).textContent=selected.s;
+  document.getElementById(ids[0]).style.color=colors[selected.cat];
+  document.getElementById(ids[1]).textContent=`${selected.en} / ${selected.hi}`;
+  document.getElementById(ids[2]).textContent=`Atomic number ${selected.n} · Period ${selected.p} · Group ${selected.g??'f-block'} · ${categoryNames[selected.cat]}`;
+ });
+ document.querySelectorAll('.el').forEach(b=>{const isSelected=Number(b.dataset.n)===n;b.style.outline=isSelected?'2px solid white':'';b.setAttribute('aria-pressed',isSelected?'true':'false')});
+ renderFacts();renderDetails();buildAtom();
+}
+function renderFacts(){let e=selected,sh=shells(e.n),val=sh[sh.length-1];let items=[['परमाणु क्रमांक / Atomic number',e.n],['परमाणु द्रव्यमान / Atomic mass',e.mass],['प्रोटॉन / Protons',e.n],['इलेक्ट्रॉन / Electrons',e.n],['न्यूट्रॉन / Neutrons (approx.)',neutrons(e)],['इलेक्ट्रॉन कोश / Shells',sh.length],['संयोजक इलेक्ट्रॉन / Outer-shell e⁻',val],['समूह / Group',e.g??'f-block'],['अवधि / Period',e.p],['वर्ग / Category',categoryNames[e.cat]]];document.getElementById('facts').innerHTML=items.map(([k,v])=>`<div class="fact"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}
+function renderDetails(){let e=selected,sh=shells(e.n),shellText=sh.map((x,i)=>`${'KLMNOPQ'[i]} shell: ${x}`).join(' · ');let content='';
+ if(activeTab==='overview')content=`<p><b>${e.en} (${e.s}) — ${e.hi}</b> आवर्त सारणी में परमाणु क्रमांक ${e.n} वाला तत्व है। / ${e.en} is element ${e.n} in the periodic table.</p><p><b>प्रकृति / Character:</b> ${e.descHi}. / ${e.descEn}.</p><p><b>वर्ग / Category:</b> ${categoryNames[e.cat]}.</p><p><b>स्थिति / Position:</b> Period ${e.p}; group ${e.g??'f-block'}.</p><p><b>सामान्य उपयोग / Common uses:</b> ${e.usesHi}. / ${e.usesEn}.</p><p class="subtle">नोट: उपयोग सामान्य उदाहरण हैं; वास्तविक उपयोग यौगिक, शुद्धता और सुरक्षा पर निर्भर करते हैं। / Uses are examples and depend on chemical form and safety requirements.</p>`;
+ if(activeTab==='atom')content=`<h3>परमाणु संरचना / Atomic structure</h3><p>तटस्थ परमाणु में ${e.n} प्रोटॉन और ${e.n} इलेक्ट्रॉन होते हैं। न्यूट्रॉन की संख्या यहाँ निकटतम द्रव्यमान संख्या से अनुमानित है; अलग-अलग समस्थानिकों में यह बदलती है।</p><p>A neutral atom has ${e.n} protons and ${e.n} electrons. Neutrons shown are estimated from the rounded atomic mass; isotopes differ.</p><h3>इलेक्ट्रॉन विन्यास / Electron configuration</h3><div class="config">${e.config}</div><h3>कोश वितरण / Shell distribution</h3><div class="config">${shellText}</div><h3>उपकोश / Subshells</h3><p>नीचे दिया विन्यास ground-state electron configuration का संक्षिप्त रूप है। / The configuration above is abbreviated using the preceding noble gas.</p><p><span class="pill">s: max 2 e⁻</span><span class="pill">p: max 6 e⁻</span><span class="pill">d: max 10 e⁻</span><span class="pill">f: max 14 e⁻</span></p><p class="subtle">3D मॉडल शिक्षण के लिए schematic है। इलेक्ट्रॉन निश्चित गोल पथों में वास्तव में नहीं घूमते; आधुनिक परमाणु मॉडल में उन्हें orbital probability clouds से दर्शाया जाता है।</p>`;
+ if(activeTab==='uses')content=`<h3>उपयोग / Uses</h3><p><b>हिंदी:</b> ${e.usesHi}।</p><p><b>English:</b> ${e.usesEn}.</p><h3>मुख्य गुण / Key characteristics</h3><p><b>हिंदी:</b> ${e.descHi}।</p><p><b>English:</b> ${e.descEn}.</p><p class="subtle">सुरक्षा: कुछ तत्व और उनके यौगिक विषैले या रेडियोधर्मी होते हैं। इन्हें केवल उचित विशेषज्ञता और नियंत्रण में संभालना चाहिए। / Some elements and compounds are toxic or radioactive and require proper controls.</p>`;
+ document.getElementById('details').innerHTML=content;
+}
+
+function buildAtom(){
+ const host=document.getElementById('atomCanvas');if(animId)cancelAnimationFrame(animId);if(renderer){renderer.dispose();host.querySelectorAll('canvas').forEach(c=>c.remove())}
+ if(!window.THREE){host.innerHTML='<div class="empty">3D मॉडल के लिए इंटरनेट कनेक्शन आवश्यक है। / Internet is required to load the 3D library.</div>';return}
+ const W=host.clientWidth||500,H=host.clientHeight||350;scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(42,W/H,.1,100);camera.position.set(0,0,12);
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(W,H);host.prepend(renderer.domElement);
+ let atomDrag=null, atomZoom=1;
+ renderer.domElement.style.touchAction='none';
+ renderer.domElement.addEventListener('pointerdown',ev=>{atomDrag={x:ev.clientX,y:ev.clientY,rx:atomGroup.rotation.x,ry:atomGroup.rotation.y,moved:false};renderer.domElement.setPointerCapture?.(ev.pointerId)});
+ renderer.domElement.addEventListener('pointermove',ev=>{if(!atomDrag)return;let dx=ev.clientX-atomDrag.x,dy=ev.clientY-atomDrag.y;if(Math.abs(dx)+Math.abs(dy)>3)atomDrag.moved=true;atomGroup.rotation.y=atomDrag.ry+dx*.008;atomGroup.rotation.x=atomDrag.rx+dy*.008});
+ renderer.domElement.addEventListener('pointerup',()=>{atomDrag=null});
+ renderer.domElement.addEventListener('pointercancel',()=>{atomDrag=null});
+ renderer.domElement.addEventListener('wheel',ev=>{ev.preventDefault();atomZoom=Math.max(.35,Math.min(4,atomZoom+(ev.deltaY>0?-.12:.12)));camera.position.z=12/atomZoom},{passive:false});
+ let pinchDistance=0,pinchZoom=atomZoom;
+ const distance=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+ renderer.domElement.addEventListener('touchstart',ev=>{if(ev.touches.length===2){pinchDistance=distance(ev.touches[0],ev.touches[1]);pinchZoom=atomZoom;}},{passive:true});
+ renderer.domElement.addEventListener('touchmove',ev=>{if(ev.touches.length===2&&pinchDistance>0){ev.preventDefault();const d=distance(ev.touches[0],ev.touches[1]);atomZoom=Math.max(.35,Math.min(4,pinchZoom*d/pinchDistance));camera.position.z=12/atomZoom;}},{passive:false});
+ renderer.domElement.addEventListener('touchend',ev=>{if(ev.touches.length<2)pinchDistance=0;},{passive:true});
+
+ scene.add(new THREE.AmbientLight(0xffffff,1.4));let light=new THREE.PointLight(0x80dfff,80);light.position.set(4,5,8);scene.add(light);atomGroup=new THREE.Group();scene.add(atomGroup);
+ let shellsArr=shells(selected.n),maxShell=shellsArr.length;
+ // Nucleus represented by separate proton/neutron beads; cap count for performance while preserving counts in labels.
+ const nuc=new THREE.Group(),nucleusRadius=.62;let total=selected.n+neutrons(selected);
+ let beads=Math.min(total,130);
+ for(let i=0;i<beads;i++){let phi=Math.acos(1-2*(i+.5)/beads),theta=Math.PI*(1+Math.sqrt(5))*i;let rad=nucleusRadius*Math.cbrt((i+.5)/beads);let pos=new THREE.Vector3(rad*Math.sin(phi)*Math.cos(theta),rad*Math.sin(phi)*Math.sin(theta),rad*Math.cos(phi));let proton=(i/ beads)<selected.n/Math.max(1,total);let mesh=new THREE.Mesh(new THREE.SphereGeometry(.075,10,8),new THREE.MeshStandardMaterial({color:proton?0xff655f:0x8da9c7,roughness:.4,metalness:.1}));mesh.position.copy(pos);nuc.add(mesh)}
+ atomGroup.add(nuc);
+ shellsArr.forEach((count,idx)=>{let radius=1.25+idx*.63;let orbit=new THREE.Mesh(new THREE.TorusGeometry(radius,.009,6,100),new THREE.MeshBasicMaterial({color:0x4c87b8,transparent:true,opacity:.65}));orbit.rotation.x=Math.PI/2+(idx%2)*.45;orbit.rotation.y=(idx%3)*.5;atomGroup.add(orbit);
+ let electrons=new THREE.Group();for(let j=0;j<count;j++){let dot=new THREE.Mesh(new THREE.SphereGeometry(.085,12,10),new THREE.MeshStandardMaterial({color:0x55e5ff,emissive:0x126a8b,emissiveIntensity:1.1}));dot.userData={angle:(Math.PI*2*j/count)+(idx*.37),radius,idx,count};electrons.add(dot)}electrons.userData={idx,radius};atomGroup.add(electrons)});
+ atomGroup.rotation.x=.3;atomGroup.rotation.y=.2;
+ function animate(t){animId=requestAnimationFrame(animate);atomGroup.rotation.y+=.0012;atomGroup.children.forEach(ch=>{if(ch.userData&&typeof ch.userData.radius==='number'&&ch.children.length){let idx=ch.userData.idx,rad=ch.userData.radius;ch.rotation.y+=.0015*(idx+1);ch.children.forEach(dot=>{if(dot.userData&&dot.userData.radius){let u=dot.userData,angle=u.angle+t*.00045*(1+u.idx*.12);dot.position.set(Math.cos(angle)*u.radius,Math.sin(angle)*u.radius*.18,Math.sin(angle)*u.radius*.88)}})}});renderer.render(scene,camera)}
+ animate(0);window.addEventListener('resize',resizeAtom,{passive:true});
+}
+function resizeAtom(){const host=document.getElementById('atomCanvas');if(renderer&&camera){const w=host.clientWidth,h=host.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{activeTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));renderDetails()}));
+function filterTableFor(index){
+ const search=document.getElementById(index===1?'search':'search2');
+ const filter=document.getElementById(index===1?'filter':'filter2');
+ const q=search.value.toLowerCase().trim(),cat=filter.value;
+ document.querySelectorAll(`#periodic${index} .el`).forEach(b=>{
+  let e=elements.find(x=>x.n===+b.dataset.n);
+  let match=(!q||`${e.n} ${e.s} ${e.en} ${e.hi}`.toLowerCase().includes(q))&&(cat==='all'||e.cat===cat);
+  b.style.visibility=match?'visible':'hidden';b.style.pointerEvents=match?'auto':'none';
+ });
+}
+[['search',1],['filter',1],['search2',2],['filter2',2]].forEach(([id,index])=>document.getElementById(id).addEventListener(id.startsWith('search')?'input':'change',()=>filterTableFor(index)));
+function showSection(index){
+ document.querySelectorAll('.page-section').forEach(s=>s.classList.toggle('active',s.id===`section${index}`));
+ document.querySelectorAll('.section-btn').forEach((b,i)=>{let active=i===index-1;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});
+ if(index===1)resizeAtom();
+}
+document.getElementById('sectionBtn1').addEventListener('click',()=>showSection(1));
+document.getElementById('sectionBtn2').addEventListener('click',()=>showSection(2));
+renderTable();renderLegend();selectElement(1);window.addEventListener('resize',resizeAtom,{passive:true});
+</script>
+</body></html>
