@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atomic Physics 3D Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#102137;--line:#29425e;--cyan:#57d6ff;--muted:#aec2d8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#193858,#07111f 65%);color:#edf5ff;font:15px system-ui,Arial}
+header{text-align:center;padding:20px 12px;border-bottom:1px solid var(--line)}h1{font-size:clamp(23px,4vw,35px);margin:0 0 5px}header p,.muted{color:var(--muted);font-size:13px}
+main{max-width:1150px;margin:auto;padding:13px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:13px}.panel{background:linear-gradient(145deg,#122941,#0b1728);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}h2{font-size:19px;margin:0 0 10px}
+#scene{height:min(58vh,520px);min-height:300px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:13px;background:radial-gradient(circle,#142b46,#050b14 75%);touch-action:none}canvas{display:block}.hint{position:absolute;bottom:8px;left:8px;right:8px;text-align:center;background:#06101dc9;border-radius:8px;padding:7px;font-size:12px;pointer-events:none}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.control{background:#091827;border:1px solid var(--line);border-radius:10px;padding:9px}.control label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}.control input,.control select{width:100%;accent-color:var(--cyan)}select{background:#0b1a2b;color:#fff;border:1px solid #38516b;border-radius:7px;padding:7px}
+.btns,.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.btn,.tab{background:#17324d;color:#eaf5ff;border:1px solid #385c7e;border-radius:9px;padding:8px 10px;cursor:pointer}.tab{background:#0b1929;color:#adc4da}.tab.active,.btn.active{background:#14516a;border-color:var(--cyan)}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.stat{background:#091827;border:1px solid var(--line);padding:10px;border-radius:10px}.stat b{display:block;color:var(--cyan);font-size:19px}.stat span{font-size:12px;color:var(--muted)}.info{line-height:1.7;font-size:14px}.info li{margin:5px 0}.pill{display:inline-block;padding:4px 8px;background:#183953;border-radius:20px;font-size:12px;margin:2px}footer{text-align:center;padding:0 12px 18px;color:var(--muted);font-size:12px}
+@media(max-width:820px){main{grid-template-columns:1fr;padding:8px}.panel{padding:10px}#scene{height:390px}}@media(max-width:430px){#scene{height:330px;min-height:280px}.controls{gap:6px}.control{padding:7px}}
+</style></head><body>
+<header><h1>⚛️ Atomic Physics 3D Lab</h1><p>परमाणु भौतिकी | Explore atomic structure in Hindi and English</p></header>
+<main><section class="panel"><h2>Interactive 3D Atom | घूमने वाला परमाणु मॉडल</h2>
+<div id="scene"><div class="hint">Drag to rotate · Wheel / two-finger pinch to zoom · मॉडल घुमाएँ और ज़ूम करें</div></div>
+<div class="controls">
+<div class="control"><label for="element">Element / तत्व <b id="sym">H</b></label><select id="element"><option value="H">Hydrogen / हाइड्रोजन</option><option value="He">Helium / हीलियम</option><option value="Li">Lithium / लिथियम</option><option value="C">Carbon / कार्बन</option><option value="N">Nitrogen / नाइट्रोजन</option><option value="O">Oxygen / ऑक्सीजन</option><option value="Na">Sodium / सोडियम</option><option value="Mg">Magnesium / मैग्नीशियम</option><option value="Al">Aluminium / एल्युमिनियम</option><option value="Si">Silicon / सिलिकॉन</option><option value="Cl">Chlorine / क्लोरीन</option><option value="Ca">Calcium / कैल्शियम</option></select></div>
+<div class="control"><label for="speed">Electron speed / गति <b id="speedVal">1×</b></label><input id="speed" type="range" min="0" max="2.5" step=".1" value="1"></div>
+<div class="control"><label for="zoom">Zoom / ज़ूम <b id="zoomVal">1×</b></label><input id="zoom" type="range" min=".55" max="2.8" step=".05" value="1"></div>
+<div class="control"><label for="shell">Highlight shell / शेल चुनें</label><select id="shell"><option value="0">All shells / सभी</option><option value="1">K shell (n=1)</option><option value="2">L shell (n=2)</option><option value="3">M shell (n=3)</option><option value="4">N shell (n=4)</option><option value="5">O shell (n=5)</option><option value="6">P shell (n=6)</option><option value="7">Q shell (n=7)</option></select></div></div>
+<div class="btns"><button class="btn active" id="pause">⏸ Pause animation</button><button class="btn" id="labels">Hide labels / लेबल</button><button class="btn" id="reset">Reset view / रीसेट</button></div>
+<p class="muted">यह सभी 118 तत्वों का सरल Bohr-style शैक्षिक मॉडल है। वास्तविक परमाणु में इलेक्ट्रॉन ग्रहों की तरह निश्चित गोल कक्षाओं में नहीं घूमते; उन्हें quantum orbitals से अधिक सही ढंग से समझा जाता है।</p>
+</section>
+<section class="panel"><h2 id="title">Hydrogen / हाइड्रोजन</h2><div class="muted" id="subtitle">Atomic number 1 · Period 1 · Group 1</div>
+<div class="stats"><div class="stat"><b id="protons">1</b><span>Protons / प्रोटॉन</span></div><div class="stat"><b id="neutrons">0</b><span>Approx. neutrons / अनुमानित न्यूट्रॉन*</span></div><div class="stat"><b id="electrons">1</b><span>Electrons / इलेक्ट्रॉन</span></div><div class="stat"><b id="config">1</b><span>Shell configuration / शेल विन्यास</span></div></div>
+<span class="pill">Nucleus / नाभिक</span><span class="pill">Electron shells / इलेक्ट्रॉन शेल</span><span class="pill">Energy levels / ऊर्जा स्तर</span>
+<div class="tabs"><button class="tab active" data-tab="overview">Overview / परिचय</button><button class="tab" data-tab="structure">Structure / संरचना</button><button class="tab" data-tab="facts">Facts / तथ्य</button><button class="tab" data-tab="quiz">Quick quiz / प्रश्न</button></div><div id="info" class="info"></div>
+</section></main><footer>* Neutron count shows a common isotope where applicable. Model is schematic, not to scale. Three.js requires internet.</footer>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+const RAW = [
+['H','Hydrogen','हाइड्रोजन','1.008',[1],'Nonmetal'],
+['He','Helium','हीलियम','4.0026',[2],'Noble gas'],
+['Li','Lithium','लिथियम','6.94',[2, 1],'Alkali metal'],
+['Be','Beryllium','बेरिलियम','9.0122',[2, 2],'Alkaline earth metal'],
+['B','Boron','बोरॉन','10.81',[2, 3],'Metalloid'],
+['C','Carbon','कार्बन','12.011',[2, 4],'Nonmetal'],
+['N','Nitrogen','नाइट्रोजन','14.007',[2, 5],'Nonmetal'],
+['O','Oxygen','ऑक्सीजन','15.999',[2, 6],'Nonmetal'],
+['F','Fluorine','फ्लोरीन','18.998',[2, 7],'Halogen'],
+['Ne','Neon','निऑन','20.180',[2, 8],'Noble gas'],
+['Na','Sodium','सोडियम','22.990',[2, 8, 1],'Alkali metal'],
+['Mg','Magnesium','मैग्नीशियम','24.305',[2, 8, 2],'Alkaline earth metal'],
+['Al','Aluminium','एल्युमिनियम','26.982',[2, 8, 3],'Post-transition metal'],
+['Si','Silicon','सिलिकॉन','28.085',[2, 8, 4],'Metalloid'],
+['P','Phosphorus','फॉस्फोरस','30.974',[2, 8, 5],'Nonmetal'],
+['S','Sulfur','सल्फर','32.06',[2, 8, 6],'Nonmetal'],
+['Cl','Chlorine','क्लोरीन','35.45',[2, 8, 7],'Halogen'],
+['Ar','Argon','आर्गन','39.948',[2, 8, 8],'Noble gas'],
+['K','Potassium','पोटैशियम','39.098',[2, 8, 8, 1],'Alkali metal'],
+['Ca','Calcium','कैल्शियम','40.078',[2, 8, 8, 2],'Alkaline earth metal'],
+['Sc','Scandium','स्कैंडियम','44.956',[2, 8, 9, 2],'Transition metal'],
+['Ti','Titanium','टाइटेनियम','47.867',[2, 8, 10, 2],'Transition metal'],
+['V','Vanadium','वैनेडियम','50.942',[2, 8, 11, 2],'Transition metal'],
+['Cr','Chromium','क्रोमियम','51.996',[2, 8, 13, 1],'Transition metal'],
+['Mn','Manganese','मैंगनीज़','54.938',[2, 8, 13, 2],'Transition metal'],
+['Fe','Iron','लोहा','55.845',[2, 8, 14, 2],'Transition metal'],
+['Co','Cobalt','कोबाल्ट','58.933',[2, 8, 15, 2],'Transition metal'],
+['Ni','Nickel','निकेल','58.693',[2, 8, 16, 2],'Transition metal'],
+['Cu','Copper','तांबा','63.546',[2, 8, 18, 1],'Transition metal'],
+['Zn','Zinc','जस्ता','65.38',[2, 8, 18, 2],'Transition metal'],
+['Ga','Gallium','गैलियम','69.723',[2, 8, 18, 3],'Post-transition metal'],
+['Ge','Germanium','जर्मेनियम','72.630',[2, 8, 18, 4],'Metalloid'],
+['As','Arsenic','आर्सेनिक','74.922',[2, 8, 18, 5],'Metalloid'],
+['Se','Selenium','सेलेनियम','78.971',[2, 8, 18, 6],'Nonmetal'],
+['Br','Bromine','ब्रोमीन','79.904',[2, 8, 18, 7],'Halogen'],
+['Kr','Krypton','क्रिप्टॉन','83.798',[2, 8, 18, 8],'Noble gas'],
+['Rb','Rubidium','रुबिडियम','85.468',[2, 8, 18, 8, 1],'Alkali metal'],
+['Sr','Strontium','स्ट्रॉन्शियम','87.62',[2, 8, 18, 8, 2],'Alkaline earth metal'],
+['Y','Yttrium','इट्रियम','88.906',[2, 8, 18, 9, 2],'Transition metal'],
+['Zr','Zirconium','ज़िरकोनियम','91.224',[2, 8, 18, 10, 2],'Transition metal'],
+['Nb','Niobium','नायोबियम','92.906',[2, 8, 18, 12, 1],'Transition metal'],
+['Mo','Molybdenum','मोलिब्डेनम','95.95',[2, 8, 18, 13, 1],'Transition metal'],
+['Tc','Technetium','टेक्नीशियम','[98]',[2, 8, 18, 13, 2],'Transition metal'],
+['Ru','Ruthenium','रूथेनियम','101.07',[2, 8, 18, 15, 1],'Transition metal'],
+['Rh','Rhodium','रोडियम','102.91',[2, 8, 18, 16, 1],'Transition metal'],
+['Pd','Palladium','पैलेडियम','106.42',[2, 8, 18, 18],'Transition metal'],
+['Ag','Silver','चाँदी','107.87',[2, 8, 18, 18, 1],'Transition metal'],
+['Cd','Cadmium','कैडमियम','112.41',[2, 8, 18, 18, 2],'Transition metal'],
+['In','Indium','इंडियम','114.82',[2, 8, 18, 18, 3],'Post-transition metal'],
+['Sn','Tin','टिन','118.71',[2, 8, 18, 18, 4],'Post-transition metal'],
+['Sb','Antimony','एंटीमनी','121.76',[2, 8, 18, 18, 5],'Metalloid'],
+['Te','Tellurium','टेल्यूरियम','127.60',[2, 8, 18, 18, 6],'Metalloid'],
+['I','Iodine','आयोडीन','126.90',[2, 8, 18, 18, 7],'Halogen'],
+['Xe','Xenon','ज़ेनॉन','131.29',[2, 8, 18, 18, 8],'Noble gas'],
+['Cs','Caesium','सीज़ियम','132.91',[2, 8, 18, 18, 8, 1],'Alkali metal'],
+['Ba','Barium','बेरियम','137.33',[2, 8, 18, 18, 8, 2],'Alkaline earth metal'],
+['La','Lanthanum','लैंथेनम','138.91',[2, 8, 18, 18, 9, 2],'Lanthanide'],
+['Ce','Cerium','सीरियम','140.12',[2, 8, 18, 19, 9, 2],'Lanthanide'],
+['Pr','Praseodymium','प्रसीओडिमियम','140.91',[2, 8, 18, 21, 8, 2],'Lanthanide'],
+['Nd','Neodymium','नियोडिमियम','144.24',[2, 8, 18, 22, 8, 2],'Lanthanide'],
+['Pm','Promethium','प्रोमेथियम','[145]',[2, 8, 18, 23, 8, 2],'Lanthanide'],
+['Sm','Samarium','समेरियम','150.36',[2, 8, 18, 24, 8, 2],'Lanthanide'],
+['Eu','Europium','यूरोपियम','151.96',[2, 8, 18, 25, 8, 2],'Lanthanide'],
+['Gd','Gadolinium','गैडोलिनियम','157.25',[2, 8, 18, 25, 9, 2],'Lanthanide'],
+['Tb','Terbium','टर्बियम','158.93',[2, 8, 18, 27, 8, 2],'Lanthanide'],
+['Dy','Dysprosium','डिस्प्रोसियम','162.50',[2, 8, 18, 28, 8, 2],'Lanthanide'],
+['Ho','Holmium','होल्मियम','164.93',[2, 8, 18, 29, 8, 2],'Lanthanide'],
+['Er','Erbium','एर्बियम','167.26',[2, 8, 18, 30, 8, 2],'Lanthanide'],
+['Tm','Thulium','थुलियम','168.93',[2, 8, 18, 31, 8, 2],'Lanthanide'],
+['Yb','Ytterbium','इटर्बियम','173.05',[2, 8, 18, 32, 8, 2],'Lanthanide'],
+['Lu','Lutetium','ल्यूटेशियम','174.97',[2, 8, 18, 32, 9, 2],'Lanthanide'],
+['Hf','Hafnium','हैफ्नियम','178.49',[2, 8, 18, 32, 10, 2],'Transition metal'],
+['Ta','Tantalum','टैंटलम','180.95',[2, 8, 18, 32, 11, 2],'Transition metal'],
+['W','Tungsten','टंगस्टन','183.84',[2, 8, 18, 32, 12, 2],'Transition metal'],
+['Re','Rhenium','रेनियम','186.21',[2, 8, 18, 32, 13, 2],'Transition metal'],
+['Os','Osmium','ऑस्मियम','190.23',[2, 8, 18, 32, 14, 2],'Transition metal'],
+['Ir','Iridium','इरिडियम','192.22',[2, 8, 18, 32, 15, 2],'Transition metal'],
+['Pt','Platinum','प्लैटिनम','195.08',[2, 8, 18, 32, 17, 1],'Transition metal'],
+['Au','Gold','सोना','196.97',[2, 8, 18, 32, 18, 1],'Transition metal'],
+['Hg','Mercury','पारा','200.59',[2, 8, 18, 32, 18, 2],'Transition metal'],
+['Tl','Thallium','थैलियम','204.38',[2, 8, 18, 32, 18, 3],'Post-transition metal'],
+['Pb','Lead','सीसा','207.2',[2, 8, 18, 32, 18, 4],'Post-transition metal'],
+['Bi','Bismuth','बिस्मथ','208.98',[2, 8, 18, 32, 18, 5],'Post-transition metal'],
+['Po','Polonium','पोलोनियम','[209]',[2, 8, 18, 32, 18, 6],'Post-transition metal'],
+['At','Astatine','एस्टाटीन','[210]',[2, 8, 18, 32, 18, 7],'Halogen'],
+['Rn','Radon','रेडॉन','[222]',[2, 8, 18, 32, 18, 8],'Noble gas'],
+['Fr','Francium','फ्रैंशियम','[223]',[2, 8, 18, 32, 18, 8, 1],'Alkali metal'],
+['Ra','Radium','रेडियम','[226]',[2, 8, 18, 32, 18, 8, 2],'Alkaline earth metal'],
+['Ac','Actinium','एक्टिनियम','[227]',[2, 8, 18, 32, 18, 9, 2],'Actinide'],
+['Th','Thorium','थोरियम','232.04',[2, 8, 18, 32, 18, 10, 2],'Actinide'],
+['Pa','Protactinium','प्रोटैक्टिनियम','231.04',[2, 8, 18, 32, 20, 9, 2],'Actinide'],
+['U','Uranium','यूरेनियम','238.03',[2, 8, 18, 32, 21, 9, 2],'Actinide'],
+['Np','Neptunium','नेप्टूनियम','[237]',[2, 8, 18, 32, 22, 9, 2],'Actinide'],
+['Pu','Plutonium','प्लूटोनियम','[244]',[2, 8, 18, 32, 24, 8, 2],'Actinide'],
+['Am','Americium','अमेरिसियम','[243]',[2, 8, 18, 32, 25, 8, 2],'Actinide'],
+['Cm','Curium','क्यूरियम','[247]',[2, 8, 18, 32, 25, 9, 2],'Actinide'],
+['Bk','Berkelium','बर्केलियम','[247]',[2, 8, 18, 32, 27, 8, 2],'Actinide'],
+['Cf','Californium','कैलिफोर्नियम','[251]',[2, 8, 18, 32, 28, 8, 2],'Actinide'],
+['Es','Einsteinium','आइंस्टीनियम','[252]',[2, 8, 18, 32, 29, 8, 2],'Actinide'],
+['Fm','Fermium','फर्मियम','[257]',[2, 8, 18, 32, 30, 8, 2],'Actinide'],
+['Md','Mendelevium','मेंडेलीवियम','[258]',[2, 8, 18, 32, 31, 8, 2],'Actinide'],
+['No','Nobelium','नोबेलियम','[259]',[2, 8, 18, 32, 32, 8, 2],'Actinide'],
+['Lr','Lawrencium','लॉरेंसियम','[266]',[2, 8, 18, 32, 32, 8, 3],'Actinide'],
+['Rf','Rutherfordium','रदरफोर्डियम','[267]',[2, 8, 18, 32, 32, 10, 2],'Transition metal'],
+['Db','Dubnium','डब्नियम','[268]',[2, 8, 18, 32, 32, 11, 2],'Transition metal'],
+['Sg','Seaborgium','सीबोर्गियम','[269]',[2, 8, 18, 32, 32, 12, 2],'Transition metal'],
+['Bh','Bohrium','बोहरियम','[270]',[2, 8, 18, 32, 32, 13, 2],'Transition metal'],
+['Hs','Hassium','हैसियम','[277]',[2, 8, 18, 32, 32, 14, 2],'Transition metal'],
+['Mt','Meitnerium','माइटनरियम','[278]',[2, 8, 18, 32, 32, 15, 2],'Unknown/transition metal'],
+['Ds','Darmstadtium','डार्मस्टैड्टियम','[281]',[2, 8, 18, 32, 32, 16, 2],'Unknown/transition metal'],
+['Rg','Roentgenium','रॉन्टजेनियम','[282]',[2, 8, 18, 32, 32, 18, 1],'Unknown/transition metal'],
+['Cn','Copernicium','कोपरनिसियम','[285]',[2, 8, 18, 32, 32, 18, 2],'Transition metal'],
+['Nh','Nihonium','निहोनियम','[286]',[2, 8, 18, 32, 32, 18, 3],'Unknown/post-transition metal'],
+['Fl','Flerovium','फ्लेरोवियम','[289]',[2, 8, 18, 32, 32, 18, 4],'Unknown/post-transition metal'],
+['Mc','Moscovium','मॉस्कोवियम','[290]',[2, 8, 18, 32, 32, 18, 5],'Unknown/post-transition metal'],
+['Lv','Livermorium','लिवरमोरियम','[293]',[2, 8, 18, 32, 32, 18, 6],'Unknown/post-transition metal'],
+['Ts','Tennessine','टेनेसीन','[294]',[2, 8, 18, 32, 32, 18, 7],'Unknown/halogen'],
+['Og','Oganesson','ओगनेसन','[294]',[2, 8, 18, 32, 32, 18, 8],'Unknown/noble gas']
+];
+
+const D = Object.fromEntries(RAW.map((r,idx)=>{
+ const [sym,en,hi,mass,shells,category]=r, z=idx+1;
+ const massNum=parseFloat(mass.replace(/[^0-9.]/g,''))||z;
+ const neutrons=Math.max(0,Math.round(massNum)-z);
+ const fact = category.includes('Noble gas') ? 'यह तत्व सामान्य परिस्थितियों में बहुत कम reactive होता है।'
+  : category.includes('Halogen') ? 'यह halogen परिवार का तत्व है; इसके गुण समूह के अन्य तत्वों से मिलते-जुलते हैं।'
+  : category.includes('Alkali') ? 'यह alkali metal परिवार में आता है और सामान्यतः बहुत reactive होता है।'
+  : category.includes('Lanthanide') ? 'यह lanthanide श्रेणी का दुर्लभ-पृथ्वी तत्व है, जिसका उपयोग विशेष materials में होता है।'
+  : category.includes('Actinide') ? 'यह actinide श्रेणी का तत्व है; कई actinides radioactive होते हैं।'
+  : category.includes('Metalloid') ? 'इसमें धातु और अधातु दोनों जैसे कुछ गुण पाए जाते हैं।'
+  : 'इसके रासायनिक और भौतिक गुण इसके atomic structure पर निर्भर करते हैं।';
+ const uses = category.includes('Noble gas') ? 'विशेष lighting, inert atmospheres और वैज्ञानिक उपकरणों में कुछ noble gases का उपयोग होता है।'
+  : category.includes('Transition metal') ? 'मिश्रधातुओं, उपकरणों, catalysts या electronics में इस परिवार के कई तत्व उपयोगी हैं।'
+  : category.includes('Lanthanide') ? 'मजबूत magnets, phosphors और विशेष optical/electronic materials में इस श्रेणी के तत्व उपयोगी हैं।'
+  : category.includes('Actinide') ? 'कुछ actinides का उपयोग nuclear science और research में नियंत्रित परिस्थितियों में होता है।'
+  : 'इस तत्व या इसके यौगिकों का उपयोग उद्योग, सामग्री-विज्ञान या शोध में हो सकता है।';
+ return [sym,{en,hi,z,n:neutrons,mass,period: (z<=2?1:z<=10?2:z<=18?3:z<=36?4:z<=54?5:z<=86?6:7),group:'—',conf:shells,type:category,fact,uses,structure:`${en} के परमाणु क्रमांक ${z} के बराबर proton होते हैं। तटस्थ परमाणु में ${z} electrons होते हैं। Shell distribution: ${shells.join(', ')}.`}];
+}));
+const order=RAW.map(r=>r[0]);
+document.getElementById('element').innerHTML=RAW.map(([s,en,hi])=>`<option value="${s}">${s} — ${en} / ${hi}</option>`).join('');
+
+let el='H',tab='overview',speed=1,zoom=1,paused=false,labels=true,rotX=.25,rotY=.4,drag=false,lx=0,ly=0,elecs=[],orbits=[],labObjs=[],nucleus,atom;
+const host=document.getElementById('scene'),scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(42,1,.1,100),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(host.clientWidth,host.clientHeight);host.prepend(renderer.domElement);camera.position.z=11;scene.add(new THREE.AmbientLight(0xffffff,1.6));let light=new THREE.PointLight(0x8bdcff,45);light.position.set(4,5,7);scene.add(light);atom=new THREE.Group();scene.add(atom);let clock=new THREE.Clock();
+function ball(r,color){return new THREE.Mesh(new THREE.SphereGeometry(r,20,16),new THREE.MeshStandardMaterial({color,roughness:.32,emissive:color,emissiveIntensity:.08}))}
+function label(text,color){let c=document.createElement('canvas');c.width=256;c.height=64;let x=c.getContext('2d');x.fillStyle='#07111ddd';x.fillRect(0,0,256,64);x.font='bold 24px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle=color;x.fillText(text,128,32);let s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(1.55,.39,1);s.userData.isLabel=true;return s}
+function build(){while(atom.children.length){let o=atom.children.pop();o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose()}}elecs=[];orbits=[];labObjs=[];let d=D[el],count=d.z+d.n,rad=Math.min(1,.34+Math.sqrt(count)*.055);
+for(let i=0;i<count;i++){let ph=Math.acos(1-2*(i+.5)/count),th=Math.PI*(1+Math.sqrt(5))*i,rr=rad*Math.cbrt((i+.5)/count);let m=ball(.105,i<d.z?0xff617c:0x7abfff);m.position.set(rr*Math.sin(ph)*Math.cos(th),rr*Math.sin(ph)*Math.sin(th),rr*Math.cos(ph));atom.add(m)}
+let radii=[1.25,1.75,2.25,2.75,3.25,3.75,4.25],colors=[0x4bdcff,0xffd166,0xc69bff,0x7cf0c5];
+d.conf.forEach((num,si)=>{let r=radii[si],points=[];for(let j=0;j<=180;j++){let a=j/180*Math.PI*2;points.push(new THREE.Vector3(Math.cos(a)*r,Math.sin(a)*r*.78,0))}let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:colors[si],transparent:true,opacity:.48}));line.userData.shell=si+1;atom.add(line);orbits.push(line);for(let j=0;j<num;j++){let e=ball(.11,0x67e8ff);e.userData={shell:si+1,angle:j/num*Math.PI*2,r,si};atom.add(e);elecs.push(e)}let l=label(['K shell','L shell','M shell','N shell','O shell','P shell','Q shell'][si],'#ffffff');l.position.set(r+.15,.2,0);l.userData.shell=si+1;atom.add(l);labObjs.push(l)});
+let core=label('NUCLEUS / नाभिक','#ff9daf');core.position.set(0,-rad-.42,0);core.scale.set(1.9,.42,1);atom.add(core);labObjs.push(core);atom.scale.setScalar(zoom);highlight();updateInfo()}
+function highlight(){let s=+document.getElementById('shell').value;orbits.forEach(o=>o.material.opacity=!s||o.userData.shell===s?.85:.08);elecs.forEach(e=>e.material.emissive.set(e.userData.shell===s||!s?0x126078:0x000000));labObjs.forEach(l=>l.visible=labels&&(!s||!l.userData.shell||l.userData.shell===s))}
+function updateInfo(){let d=D[el],conf=d.conf.join(', ');document.getElementById('sym').textContent=el;document.getElementById('title').textContent=d.en+' / '+d.hi;document.getElementById('subtitle').textContent=`Atomic number ${d.z} · Period ${d.period} · ${d.type}`;document.getElementById('protons').textContent=d.z;document.getElementById('neutrons').textContent=d.n;document.getElementById('electrons').textContent=d.z;document.getElementById('config').textContent=conf;let out=document.getElementById('info');if(tab==='overview')out.innerHTML=`<b>आसान हिंदी:</b> ${d.en} (${d.hi}) एक chemical element है। Neutral atom में ${d.z} protons और ${d.z} electrons होते हैं। ${d.fact}<p><b>Easy English:</b> ${d.en} has atomic number ${d.z}. A neutral atom has ${d.z} protons and ${d.z} electrons. ${d.fact}</p><b>Uses / उपयोग:</b> ${d.uses}`;if(tab==='structure')out.innerHTML=`<b>परमाणु की संरचना:</b> ${d.en} के सामान्य isotope में ${d.z} protons और लगभग ${d.n} neutrons दिखाए गए हैं। Electron shell configuration: ${conf}.<ul><li><b>Proton:</b> धनात्मक आवेश (+), nucleus में।</li><li><b>Neutron:</b> कोई विद्युत आवेश नहीं, nucleus में।</li><li><b>Electron:</b> ऋणात्मक आवेश (−), nucleus के आसपास पाया जाता है।</li><li><b>Shell:</b> सरल मॉडल में energy levels को K, L, M, N कहते हैं।</li></ul><b>English:</b> This simplified shell model shows the nucleus and occupied energy levels. Real electrons are described more accurately by quantum orbitals.`;if(tab==='facts')out.innerHTML=`<ul><li>Atomic number: ${d.z}</li><li>Approx. atomic mass: ${d.mass}</li><li>Shell configuration: ${conf}</li><li>Category: ${d.type}</li></ul><b>याद रखें:</b> Neutral atom में protons और electrons बराबर होते हैं। Ion बनने पर electron count बदल सकता है।`;if(tab==='quiz')out.innerHTML=`<b>${d.en} का atomic number क्या है? / What is the atomic number of ${d.en}?</b><div class="btns">${[d.z-1,d.z,d.z+1].map(n=>`<button class="btn" onclick="answer(${n})">${n}</button>`).join('')}</div><p id="feedback" class="muted">एक उत्तर चुनें / Choose an answer</p>`}
+window.answer=n=>{let f=document.getElementById('feedback');f.textContent=n===D[el].z?'सही उत्तर! / Correct!':'फिर कोशिश करें / Try again';f.style.color=n===D[el].z?'#7cf0c5':'#ff9daf'};
+function animate(){requestAnimationFrame(animate);let dt=clock.getDelta();if(!paused)elecs.forEach(e=>{let u=e.userData;u.angle+=dt*speed*1.5/(u.si+1);e.position.set(Math.cos(u.angle)*u.r,Math.sin(u.angle)*u.r*.78,Math.sin(u.angle*1.7+u.si)*.25)});atom.rotation.set(rotX,rotY,0);renderer.render(scene,camera)}animate();
+function resize(){let w=host.clientWidth,h=host.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}window.addEventListener('resize',resize);
+host.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;host.setPointerCapture(e.pointerId)});host.addEventListener('pointermove',e=>{if(!drag)return;rotY+=(e.clientX-lx)*.008;rotX+=(e.clientY-ly)*.008;lx=e.clientX;ly=e.clientY});host.addEventListener('pointerup',()=>drag=false);host.addEventListener('pointercancel',()=>drag=false);
+function setZoom(v){zoom=Math.max(.55,Math.min(2.8,v));atom.scale.setScalar(zoom);document.getElementById('zoom').value=zoom;document.getElementById('zoomVal').textContent=zoom.toFixed(2)+'×'}host.addEventListener('wheel',e=>{e.preventDefault();setZoom(zoom*(e.deltaY>0?.92:1.087))},{passive:false});let pd=0,pz=zoom;let dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);host.addEventListener('touchstart',e=>{if(e.touches.length===2){pd=dist(e.touches[0],e.touches[1]);pz=zoom}},{passive:true});host.addEventListener('touchmove',e=>{if(e.touches.length===2&&pd){e.preventDefault();setZoom(pz*dist(e.touches[0],e.touches[1])/pd)}},{passive:false});host.addEventListener('touchend',e=>{if(e.touches.length<2)pd=0},{passive:true});
+document.getElementById('element').onchange=e=>{el=e.target.value;build()};document.getElementById('speed').oninput=e=>{speed=+e.target.value;document.getElementById('speedVal').textContent=speed.toFixed(1)+'×'};document.getElementById('zoom').oninput=e=>setZoom(+e.target.value);document.getElementById('shell').onchange=highlight;
+document.getElementById('pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'▶ Resume animation':'⏸ Pause animation';e.target.classList.toggle('active',paused)};document.getElementById('labels').onclick=e=>{labels=!labels;highlight();e.target.textContent=labels?'Hide labels / लेबल':'Show labels / लेबल'};document.getElementById('reset').onclick=()=>{rotX=.25;rotY=.4;setZoom(1);document.getElementById('shell').value='0';highlight()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));updateInfo()});build();
+</script></body></html>
